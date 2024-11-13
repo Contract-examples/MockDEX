@@ -15,6 +15,11 @@ contract V2Dex is Ownable, ReentrancyGuardTransient, Pausable {
     address public immutable weth;
     address public immutable admin;
 
+    // Define Custom Errors
+    error V2Dex__InvalidPath();
+    error V2Dex__ExcessiveInputAmount();
+    error V2Dex__ETHTransferFailed();
+
     constructor(address _initialAdmin, address _weth) Ownable(_initialAdmin) {
         admin = _initialAdmin;
         weth = _weth;
@@ -170,7 +175,7 @@ contract V2Dex is Ownable, ReentrancyGuardTransient, Pausable {
         returns (uint256[] memory amounts)
     {
         amounts = router.getAmountsIn(amountOut, path);
-        require(amounts[0] <= amountInMax, "V2Dex: EXCESSIVE_INPUT_AMOUNT");
+        if (amounts[0] > amountInMax) revert V2Dex__ExcessiveInputAmount();
 
         IERC20(path[0]).transferFrom(msg.sender, address(this), amounts[0]);
         IERC20(path[0]).approve(address(router), amounts[0]);
@@ -188,7 +193,7 @@ contract V2Dex is Ownable, ReentrancyGuardTransient, Pausable {
         payable
         returns (uint256[] memory amounts)
     {
-        require(path[0] == weth, "V2Dex: INVALID_PATH");
+        if (path[0] != weth) revert V2Dex__InvalidPath();
         return router.swapExactETHForTokens{ value: msg.value }(amountOutMin, path, to, deadline);
     }
 
@@ -202,9 +207,9 @@ contract V2Dex is Ownable, ReentrancyGuardTransient, Pausable {
         external
         returns (uint256[] memory amounts)
     {
-        require(path[path.length - 1] == weth, "V2Dex: INVALID_PATH");
+        if (path[path.length - 1] != weth) revert V2Dex__InvalidPath();
         amounts = router.getAmountsIn(amountOut, path);
-        require(amounts[0] <= amountInMax, "V2Dex: EXCESSIVE_INPUT_AMOUNT");
+        if (amounts[0] > amountInMax) revert V2Dex__ExcessiveInputAmount();
 
         IERC20(path[0]).transferFrom(msg.sender, address(this), amounts[0]);
         IERC20(path[0]).approve(address(router), amounts[0]);
@@ -222,7 +227,7 @@ contract V2Dex is Ownable, ReentrancyGuardTransient, Pausable {
         external
         returns (uint256[] memory amounts)
     {
-        require(path[path.length - 1] == weth, "V2Dex: INVALID_PATH");
+        if (path[path.length - 1] != weth) revert V2Dex__InvalidPath();
 
         IERC20(path[0]).transferFrom(msg.sender, address(this), amountIn);
         IERC20(path[0]).approve(address(router), amountIn);
@@ -240,16 +245,16 @@ contract V2Dex is Ownable, ReentrancyGuardTransient, Pausable {
         payable
         returns (uint256[] memory amounts)
     {
-        require(path[0] == weth, "V2Dex: INVALID_PATH");
+        if (path[0] != weth) revert V2Dex__InvalidPath();
         amounts = router.getAmountsIn(amountOut, path);
-        require(amounts[0] <= msg.value, "V2Dex: EXCESSIVE_INPUT_AMOUNT");
+        if (amounts[0] > msg.value) revert V2Dex__ExcessiveInputAmount();
 
         amounts = router.swapETHForExactTokens{ value: msg.value }(amountOut, path, to, deadline);
 
         // Return excess ETH
         if (msg.value > amounts[0]) {
             (bool success,) = msg.sender.call{ value: msg.value - amounts[0] }("");
-            require(success, "V2Dex: ETH_TRANSFER_FAILED");
+            if (!success) revert V2Dex__ETHTransferFailed();
         }
 
         return amounts;
