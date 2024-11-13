@@ -33,8 +33,6 @@ Logs:
 Suite result: ok. 6 passed; 0 failed; 0 skipped; finished in 2.78ms (7.20ms CPU time)
 
 Ran 1 test suite in 10.22ms (2.78ms CPU time): 6 tests passed, 0 failed, 0 skipped (6 total tests)
-
-Ran 1 test suite in 9.59ms (2.45ms CPU time): 4 tests passed, 0 failed, 0 skipped (4 total tests)
 ```
 
 
