@@ -40,6 +40,8 @@ contract V2Dex is IV2Dex, Ownable, ReentrancyGuardTransient, Pausable {
         uint256 deadline
     )
         external
+        nonReentrant
+        whenNotPaused
         returns (uint256 amountA, uint256 amountB, uint256 liquidity)
     {
         IERC20(tokenA).transferFrom(msg.sender, address(this), amountADesired);
@@ -61,6 +63,8 @@ contract V2Dex is IV2Dex, Ownable, ReentrancyGuardTransient, Pausable {
     )
         external
         payable
+        nonReentrant
+        whenNotPaused
         returns (uint256 amountToken, uint256 amountETH, uint256 liquidity)
     {
         IERC20(token).transferFrom(msg.sender, address(this), amountTokenDesired);
@@ -81,6 +85,8 @@ contract V2Dex is IV2Dex, Ownable, ReentrancyGuardTransient, Pausable {
         uint256 deadline
     )
         external
+        nonReentrant
+        whenNotPaused
         returns (uint256 amountA, uint256 amountB)
     {
         address pair = factory.getPair(tokenA, tokenB);
@@ -99,6 +105,8 @@ contract V2Dex is IV2Dex, Ownable, ReentrancyGuardTransient, Pausable {
         uint256 deadline
     )
         external
+        nonReentrant
+        whenNotPaused
         returns (uint256 amountToken, uint256 amountETH)
     {
         address pair = factory.getPair(token, weth);
@@ -122,6 +130,8 @@ contract V2Dex is IV2Dex, Ownable, ReentrancyGuardTransient, Pausable {
         bytes32 s
     )
         external
+        nonReentrant
+        whenNotPaused
         returns (uint256 amountA, uint256 amountB)
     {
         return router.removeLiquidityWithPermit(
@@ -142,6 +152,8 @@ contract V2Dex is IV2Dex, Ownable, ReentrancyGuardTransient, Pausable {
         bytes32 s
     )
         external
+        nonReentrant
+        whenNotPaused
         returns (uint256 amountToken, uint256 amountETH)
     {
         return router.removeLiquidityETHWithPermit(
@@ -157,6 +169,8 @@ contract V2Dex is IV2Dex, Ownable, ReentrancyGuardTransient, Pausable {
         uint256 deadline
     )
         external
+        nonReentrant
+        whenNotPaused
         returns (uint256[] memory amounts)
     {
         IERC20(path[0]).transferFrom(msg.sender, address(this), amountIn);
@@ -173,6 +187,8 @@ contract V2Dex is IV2Dex, Ownable, ReentrancyGuardTransient, Pausable {
         uint256 deadline
     )
         external
+        nonReentrant
+        whenNotPaused
         returns (uint256[] memory amounts)
     {
         amounts = router.getAmountsIn(amountOut, path);
@@ -192,6 +208,8 @@ contract V2Dex is IV2Dex, Ownable, ReentrancyGuardTransient, Pausable {
     )
         public
         payable
+        nonReentrant
+        whenNotPaused
         returns (uint256[] memory amounts)
     {
         if (path[0] != weth) revert V2Dex__InvalidPath();
@@ -206,6 +224,8 @@ contract V2Dex is IV2Dex, Ownable, ReentrancyGuardTransient, Pausable {
         uint256 deadline
     )
         external
+        nonReentrant
+        whenNotPaused
         returns (uint256[] memory amounts)
     {
         if (path[path.length - 1] != weth) revert V2Dex__InvalidPath();
@@ -226,6 +246,8 @@ contract V2Dex is IV2Dex, Ownable, ReentrancyGuardTransient, Pausable {
         uint256 deadline
     )
         public
+        nonReentrant
+        whenNotPaused
         returns (uint256[] memory amounts)
     {
         if (path[path.length - 1] != weth) revert V2Dex__InvalidPath();
@@ -244,6 +266,8 @@ contract V2Dex is IV2Dex, Ownable, ReentrancyGuardTransient, Pausable {
     )
         external
         payable
+        nonReentrant
+        whenNotPaused
         returns (uint256[] memory amounts)
     {
         if (path[0] != weth) revert V2Dex__InvalidPath();
@@ -328,7 +352,6 @@ contract V2Dex is IV2Dex, Ownable, ReentrancyGuardTransient, Pausable {
     )
         external
         payable
-        override
         returns (uint256[] memory amounts)
     {
         address[] memory path = new address[](2);
@@ -345,7 +368,6 @@ contract V2Dex is IV2Dex, Ownable, ReentrancyGuardTransient, Pausable {
         uint256 deadline
     )
         external
-        override
         returns (uint256[] memory amounts)
     {
         address[] memory path = new address[](2);
@@ -353,5 +375,13 @@ contract V2Dex is IV2Dex, Ownable, ReentrancyGuardTransient, Pausable {
         path[1] = weth;
 
         return swapExactTokensForETH(sellAmount, minBuyAmount, path, msg.sender, deadline);
+    }
+
+    function pause() external onlyOwner {
+        _pause();
+    }
+
+    function unpause() external onlyOwner {
+        _unpause();
     }
 }
