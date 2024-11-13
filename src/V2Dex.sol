@@ -8,8 +8,9 @@ import { Pausable } from "@openzeppelin/contracts/utils/Pausable.sol";
 import { UniswapV2Factory } from "@uniswap-v2/core/UniswapV2Factory.sol";
 import { UniswapV2Router02 } from "@uniswap-v2/periphery/UniswapV2Router02.sol";
 import { IERC20 } from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "./interfaces/IV2Dex.sol";
 
-contract V2Dex is Ownable, ReentrancyGuardTransient, Pausable {
+contract V2Dex is IV2Dex, Ownable, ReentrancyGuardTransient, Pausable {
     UniswapV2Factory public immutable factory;
     UniswapV2Router02 public immutable router;
     address public immutable weth;
@@ -319,4 +320,38 @@ contract V2Dex is Ownable, ReentrancyGuardTransient, Pausable {
     }
 
     receive() external payable { }
+
+    function sellETH(
+        address buyToken,
+        uint256 minBuyAmount,
+        uint256 deadline
+    )
+        external
+        payable
+        override
+        returns (uint256[] memory amounts)
+    {
+        address[] memory path = new address[](2);
+        path[0] = weth;
+        path[1] = buyToken;
+
+        return swapExactETHForTokens(minBuyAmount, path, msg.sender, deadline);
+    }
+
+    function buyETH(
+        address sellToken,
+        uint256 sellAmount,
+        uint256 minBuyAmount,
+        uint256 deadline
+    )
+        external
+        override
+        returns (uint256[] memory amounts)
+    {
+        address[] memory path = new address[](2);
+        path[0] = sellToken;
+        path[1] = weth;
+
+        return swapExactTokensForETH(sellAmount, minBuyAmount, path, msg.sender, deadline);
+    }
 }
