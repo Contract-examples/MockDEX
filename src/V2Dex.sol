@@ -14,11 +14,11 @@ contract V2Dex is Ownable, ReentrancyGuardTransient, Pausable {
     address public immutable weth;
     address public immutable admin;
 
-    constructor(address initialAdmin, address _weth) Ownable(initialAdmin) {
-        admin = initialAdmin;
+    constructor(address _initialAdmin, address _weth) Ownable(_initialAdmin) {
+        admin = _initialAdmin;
         weth = _weth;
 
-        factory = new UniswapV2Factory(initialAdmin);
+        factory = new UniswapV2Factory(_initialAdmin);
         router = new UniswapV2Router02(address(factory), weth);
     }
 
