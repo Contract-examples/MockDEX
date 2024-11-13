@@ -6,3 +6,4 @@
 @uups-proxy-factory-sdk/=lib/UUPSProxyFactorySDK/
 @multicall3-sdk/=lib/Multicall3-SDK/
 @forge/=lib/forge-std/src/
+@uniswap-v2/=lib/UniswapV2-clone/src/

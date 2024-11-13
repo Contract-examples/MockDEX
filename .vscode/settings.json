@@ -15,6 +15,7 @@
         "@permit2-light-sdk/=lib/permit2-light-sdk/",
         "@uups-proxy-factory-sdk/=lib/UUPSProxyFactorySDK/",
         "@multicall3-sdk/=lib/Multicall3-SDK/",
-        "@forge/=lib/forge-std/src/"
+        "@forge/=lib/forge-std/src/",
+        "@uniswap-v2/=lib/UniswapV2-clone/src/"
     ]
 }
