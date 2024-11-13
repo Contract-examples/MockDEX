@@ -166,5 +166,74 @@ contract V2DexTest is Test {
         vm.stopPrank();
     }
 
+    function testSellETH() public {
+        vm.startPrank(user);
+        vm.deal(user, 100 ether);
+
+        // First add liquidity
+        rnt.approve(address(v2dex), type(uint256).max);
+        v2dex.addLiquidityETH{ value: 50 ether }(address(rnt), 5000 ether, 0, 0, user, block.timestamp + 1);
+
+        // Record balances before swap
+        uint256 rntBalanceBefore = rnt.balanceOf(user);
+        uint256 ethBalanceBefore = user.balance;
+
+        // Calculate expected output
+        address[] memory path = new address[](2);
+        path[0] = address(weth);
+        path[1] = address(rnt);
+        uint256[] memory amounts = v2dex.getAmountsOut(1 ether, path);
+        uint256 minBuyAmount = amounts[1] * 99 / 100; // 1% slippage
+
+        // Execute sellETH
+        uint256[] memory swapAmounts = v2dex.sellETH{ value: 1 ether }(address(rnt), minBuyAmount, block.timestamp + 1);
+
+        // Verify results
+        assertEq(swapAmounts[0], 1 ether, "Incorrect ETH input amount");
+        assertEq(swapAmounts[1], amounts[1], "Incorrect RNT output amount");
+        assertEq(user.balance, ethBalanceBefore - 1 ether, "Incorrect ETH balance");
+        assertEq(rnt.balanceOf(user) - rntBalanceBefore, amounts[1], "Incorrect RNT balance change");
+
+        console.log("ETH sold:", swapAmounts[0]);
+        console.log("RNT received:", swapAmounts[1]);
+
+        vm.stopPrank();
+    }
+
+    function testBuyETH() public {
+        vm.startPrank(user);
+        vm.deal(user, 100 ether);
+
+        // First add liquidity
+        rnt.approve(address(v2dex), type(uint256).max);
+        v2dex.addLiquidityETH{ value: 50 ether }(address(rnt), 5000 ether, 0, 0, user, block.timestamp + 1);
+
+        // Record balances before swap
+        uint256 rntBalanceBefore = rnt.balanceOf(user);
+        uint256 ethBalanceBefore = user.balance;
+
+        // Calculate expected output for 100 RNT
+        uint256 sellAmount = 100 ether;
+        address[] memory path = new address[](2);
+        path[0] = address(rnt);
+        path[1] = address(weth);
+        uint256[] memory amounts = v2dex.getAmountsOut(sellAmount, path);
+        uint256 minBuyAmount = amounts[1] * 99 / 100; // 1% slippage
+
+        // Execute buyETH
+        uint256[] memory swapAmounts = v2dex.buyETH(address(rnt), sellAmount, minBuyAmount, block.timestamp + 1);
+
+        // Verify results
+        assertEq(swapAmounts[0], sellAmount, "Incorrect RNT input amount");
+        assertEq(swapAmounts[1], amounts[1], "Incorrect ETH output amount");
+        assertEq(rntBalanceBefore - rnt.balanceOf(user), sellAmount, "Incorrect RNT balance change");
+        assertEq(user.balance - ethBalanceBefore, amounts[1], "Incorrect ETH balance change");
+
+        console.log("RNT sold:", swapAmounts[0]);
+        console.log("ETH received:", swapAmounts[1]);
+
+        vm.stopPrank();
+    }
+
     receive() external payable { }
 }

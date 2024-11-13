@@ -186,11 +186,11 @@ contract V2Dex is IV2Dex, Ownable, ReentrancyGuardTransient, Pausable {
 
     function swapExactETHForTokens(
         uint256 amountOutMin,
-        address[] calldata path,
+        address[] memory path,
         address to,
         uint256 deadline
     )
-        external
+        public
         payable
         returns (uint256[] memory amounts)
     {
@@ -221,11 +221,11 @@ contract V2Dex is IV2Dex, Ownable, ReentrancyGuardTransient, Pausable {
     function swapExactTokensForETH(
         uint256 amountIn,
         uint256 amountOutMin,
-        address[] calldata path,
+        address[] memory path,
         address to,
         uint256 deadline
     )
-        external
+        public
         returns (uint256[] memory amounts)
     {
         if (path[path.length - 1] != weth) revert V2Dex__InvalidPath();
