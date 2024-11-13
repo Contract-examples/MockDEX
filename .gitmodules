@@ -22,3 +22,6 @@
 [submodule "lib/Multicall3-SDK"]
 	path = lib/Multicall3-SDK
 	url = https://github.com/gmh5225/Multicall3-SDK
+[submodule "lib/UniswapV2-clone"]
+	path = lib/UniswapV2-clone
+	url = https://github.com/Contract-examples/UniswapV2-clone
